@@ -85,19 +85,10 @@
             "FP1",
             "PPDATP1"});
             this.comboBox1.FormattingEnabled = true;
-            this.comboBox1.Items.AddRange(new object[] {
-            "",
-            "PPDATP1",
-            "FP1",
-            "XP1",
-            "PPDATP2",
-            "FP2",
-            "XP2",
-            "PPDATP3",
-            "FZone01_Entry"});
             this.comboBox1.Location = new System.Drawing.Point(1179, 230);
             this.comboBox1.Name = "comboBox1";
             this.comboBox1.Size = new System.Drawing.Size(121, 24);
+            this.comboBox1.Sorted = true;
             this.comboBox1.TabIndex = 3;
             this.comboBox1.SelectedIndexChanged += new System.EventHandler(this.comboBox1_SelectedIndexChanged);
             // 
