@@ -244,7 +244,7 @@ namespace SistemadeComandos
                 }
                 if (line[1].Equals("FOLD"))
                 {
-                    listademensajes.Add(line[2] + ';' + line[3]+'\n');
+                    listademensajes.Add(line[2] + ';' + line[3]+';'+line[7]+'\n');
                 }
 
             }

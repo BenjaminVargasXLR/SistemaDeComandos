@@ -66,6 +66,8 @@ namespace sistemadecomandos2
 
         private void button1_Click(object sender, EventArgs e)
         {
+            dataGridView1.Rows.Clear();
+
             string rootfile = String.Empty;
 
             if (g_file.ShowDialog().Equals(DialogResult.OK))
@@ -78,27 +80,62 @@ namespace sistemadecomandos2
                 processtextDoc1();
                 GetComands();
 
+                int cont = 0;
+
                 foreach (var item in listademensajes)
                 {
+
+
                     string[] line = item.Split(';');
 
                     if (line[0].Equals("PTP") || line[0].Equals("LIN") || line[0].Equals("CIRC"))
                     {
-                        this.dataGridView1.Rows.Add(MOVECMD,"",line[0]);
+                        if (line.Count()==3)
+                        {
+                            if (!String.IsNullOrEmpty(line[2]))
+                            {
+                                this.dataGridView1.Rows.Add(MOVECMD, "", line[0], line[2]);
+                            }
+                            else
+                            {
+
+                                this.dataGridView1.Rows.Add(MOVECMD, "", line[0], "-1");
+                            }
+
+                           
+
+                        }
+
+                    }
+                    if (line[0].Equals("CMD_SETENTRY"))
+                    {
+                        if (line[1]!=("0\n"))
+                        {
+                            string text = listademensajes.ElementAt(cont + 1);
+                        }
+
                     }
                     else
                     {
                         string[] auxline = line[0].Split('_');
 
-                        if (!String.IsNullOrEmpty(auxline[1]))
+                        if (auxline.Count()>=2)
                         {
-                            this.dataGridView1.Rows.Add(auxline[1],"","NULL");
+
+                            if (!String.IsNullOrEmpty(auxline[1]))
+                            {
+                                this.dataGridView1.Rows.Add(auxline[1], "", "NULL", "-1");
+
+                            }
 
                         }
+
+                       
                        
 
                        
                     }
+                    cont++;
                 }
 
             }
@@ -171,7 +208,8 @@ namespace sistemadecomandos2
                 }
                 if (line[1].Equals("FOLD"))
                 {
-                    listademensajes.Add(line[2] + ';' + line[3] + '\n');
+                    listademensajes.Add(line[2] + ';' + line[3] + ';' + line[7]+ '\n');
+
                 }
 
             }
@@ -179,5 +217,9 @@ namespace sistemadecomandos2
             listademensajes = listademensajes.Select(i => i).Distinct().ToList();
         }
 
+        private void button2_Click(object sender, EventArgs e)
+        {
+            this.dataGridView1.Rows.Clear();
+        }
     }
 }
