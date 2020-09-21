@@ -58,6 +58,12 @@ namespace SistemadeComandos
             richTextBox1.AppendText(line + '\n');
         }
 
+        public void showlist(List<string> list)
+        {
+            list.ForEach(item => richTextBox1.AppendText(item));
+            richTextBox1.ScrollToCaret();
+        }
+
         private void button1_Click(object sender, EventArgs e)
         {
             try
@@ -74,6 +80,8 @@ namespace SistemadeComandos
                 {
                     processtextDoc1();
                     showLines(g_pathProcessTextDoc1);
+                    //GetComands();
+                    //showlist(listademensajes);
                     List<string> listadecomandos = new List<string>();
 
                     listadecomandos = fillCombobox();
@@ -120,12 +128,7 @@ namespace SistemadeComandos
 
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            string selectedOption = comboBox1.SelectedItem.ToString();
-
-            if (selectedOption.Contains("P"))
-            {
-                string option =  "x"+selectedOption
-            }
+            
         }
 
         /// <summary>
@@ -192,11 +195,14 @@ namespace SistemadeComandos
                     {
                         while ((line = reader.ReadLine()) != null)
                         {
-                            if (!line.Contains(";FOLD PTP") && !line.Contains(";FOLD LIN") && !line.Contains(";FOLD CIRC"))
+                            if (!line.Contains(";FOLD PTP") && !line.Contains(";FOLD LIN") && !line.Contains(";FOLD CIRC") && !line.Contains("CMD_SETENTRY") && !line.Contains("CMD_INIT") && !line.Contains("CMD_CHANGEWORKZONE") && !line.Contains("CMD_CHANGETOOL") && !line.Contains("CMD_VALVEAPERTURE") && !line.Contains("CMD_SLEEP"))
                                 continue;
                             //line = Regex.Replace(line, @"\s", "");
                             line = line.Trim('"');
+                            line = line.Replace('=',' ');
+                            line = line.Trim();
                             line = line.Replace(' ', ';');
+
                             writer.WriteLine(line);
                         }
                     }
@@ -213,6 +219,38 @@ namespace SistemadeComandos
 
         //Ruta de archivos de salida para archivos procesados de DoC2
         string g_pathProcessTextDoc2 = @"C:\Users\thebo\Desktop\processtext\docfilterDoc2.txt";
+
+        List<string> listademensajes = new List<string>();
+
+        public void GetComands()
+        {
+            string[] lines = File.ReadAllLines(g_pathProcessTextDoc1);
+
+            foreach (string item in lines)
+            {
+                string[] line = item.Split(';');
+
+                if (line[0].Equals("CMD_INIT")  || line[0].Equals("CMD_CHANGEWORKZONE") || line[0].Equals("CMD_CHANGETOOL") || line[0].Equals("CMD_VALVEAPERTURE") || line.Equals("CMD_SLEEP"))
+                {
+                    listademensajes.Add(line[0]+'\n');
+                }
+                if (line[0].Equals("CMD_SETENTRY"))
+                {
+                    if (!String.IsNullOrEmpty(line[3]))
+                    {
+                        listademensajes.Add(line[0] + ';' + line[3]+'\n');
+                    }
+
+                }
+                if (line[1].Equals("FOLD"))
+                {
+                    listademensajes.Add(line[2] + ';' + line[3]+'\n');
+                }
+
+            }
+
+            listademensajes = listademensajes.Select(i => i).Distinct().ToList();
+        }
 
         public void processtextDoc2()
         {
