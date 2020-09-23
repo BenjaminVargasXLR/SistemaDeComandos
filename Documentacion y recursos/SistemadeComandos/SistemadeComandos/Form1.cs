@@ -218,7 +218,7 @@ namespace SistemadeComandos
         }
 
         //Ruta de archivos de salida para archivos procesados de DoC2
-        string g_pathProcessTextDoc2 = @"C:\Users\thebo\Desktop\processtext\docfilterDoc2.txt";
+        string g_pathProcessTextDoc2 = @"C:\Users\thebo\Desktop\processtext\docfilterDoc2.csv";
 
         List<string> listademensajes = new List<string>();
 
@@ -268,6 +268,7 @@ namespace SistemadeComandos
                                 continue;
                             //line = Regex.Replace(line, @"\s", "");
                             line = line.Trim('"');
+                            line = line.Trim('\n');
                             line = line.Replace('=', ';');
                             line = line.Replace(',', ';');
                             line = line.Replace('"', ' ');

@@ -39,9 +39,11 @@
             this.BASENUM = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.CIRCAUXPOS = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.SLEEPTIME = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.RECETA = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.button1 = new System.Windows.Forms.Button();
             this.button2 = new System.Windows.Forms.Button();
+            this.ShowData = new System.Windows.Forms.Button();
+            this.label1 = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -58,13 +60,13 @@
             this.WORKZONE,
             this.BASENUM,
             this.CIRCAUXPOS,
-            this.SLEEPTIME,
-            this.RECETA});
-            this.dataGridView1.Location = new System.Drawing.Point(12, 12);
+            this.SLEEPTIME});
+            this.dataGridView1.Location = new System.Drawing.Point(41, 11);
+            this.dataGridView1.Margin = new System.Windows.Forms.Padding(2);
             this.dataGridView1.Name = "dataGridView1";
             this.dataGridView1.RowHeadersWidth = 51;
             this.dataGridView1.RowTemplate.Height = 24;
-            this.dataGridView1.Size = new System.Drawing.Size(1430, 547);
+            this.dataGridView1.Size = new System.Drawing.Size(1308, 444);
             this.dataGridView1.TabIndex = 0;
             this.dataGridView1.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView1_CellContentClick);
             // 
@@ -138,18 +140,12 @@
             this.SLEEPTIME.Name = "SLEEPTIME";
             this.SLEEPTIME.Width = 125;
             // 
-            // RECETA
-            // 
-            this.RECETA.HeaderText = "RECETA";
-            this.RECETA.MinimumWidth = 6;
-            this.RECETA.Name = "RECETA";
-            this.RECETA.Width = 125;
-            // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(12, 590);
+            this.button1.Location = new System.Drawing.Point(510, 478);
+            this.button1.Margin = new System.Windows.Forms.Padding(2);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(154, 61);
+            this.button1.Size = new System.Drawing.Size(116, 50);
             this.button1.TabIndex = 2;
             this.button1.Text = "Cargar Archivo";
             this.button1.UseVisualStyleBackColor = true;
@@ -157,33 +153,70 @@
             // 
             // button2
             // 
-            this.button2.Location = new System.Drawing.Point(225, 590);
+            this.button2.Location = new System.Drawing.Point(812, 478);
+            this.button2.Margin = new System.Windows.Forms.Padding(2);
             this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(154, 61);
+            this.button2.Size = new System.Drawing.Size(116, 50);
             this.button2.TabIndex = 3;
             this.button2.Text = "Limpiar Visor";
             this.button2.UseVisualStyleBackColor = true;
             this.button2.Click += new System.EventHandler(this.button2_Click);
             // 
+            // ShowData
+            // 
+            this.ShowData.Location = new System.Drawing.Point(662, 478);
+            this.ShowData.Margin = new System.Windows.Forms.Padding(2);
+            this.ShowData.Name = "ShowData";
+            this.ShowData.Size = new System.Drawing.Size(116, 50);
+            this.ShowData.TabIndex = 4;
+            this.ShowData.Text = "Mostrar Datos";
+            this.ShowData.UseVisualStyleBackColor = true;
+            this.ShowData.Click += new System.EventHandler(this.ShowData_Click);
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(129, 497);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(35, 13);
+            this.label1.TabIndex = 5;
+            this.label1.Text = "label1";
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(302, 497);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(35, 13);
+            this.label2.TabIndex = 6;
+            this.label2.Text = "label2";
+            // 
             // Form1
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1782, 723);
+            this.ClientSize = new System.Drawing.Size(1386, 570);
+            this.Controls.Add(this.label2);
+            this.Controls.Add(this.label1);
+            this.Controls.Add(this.ShowData);
             this.Controls.Add(this.button2);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.dataGridView1);
+            this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "Form1";
             this.Text = "Form1";
             this.Load += new System.EventHandler(this.Form1_Load);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
         #endregion
 
         private System.Windows.Forms.DataGridView dataGridView1;
+        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button button2;
         private System.Windows.Forms.DataGridViewTextBoxColumn INSTRUCT_TYPE;
         private System.Windows.Forms.DataGridViewTextBoxColumn TARGET_POS;
         private System.Windows.Forms.DataGridViewTextBoxColumn MOVETYPE;
@@ -194,9 +227,9 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn BASENUM;
         private System.Windows.Forms.DataGridViewTextBoxColumn CIRCAUXPOS;
         private System.Windows.Forms.DataGridViewTextBoxColumn SLEEPTIME;
-        private System.Windows.Forms.DataGridViewTextBoxColumn RECETA;
-        private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Button ShowData;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label label2;
     }
 }
 
