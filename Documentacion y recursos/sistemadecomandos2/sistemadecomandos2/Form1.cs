@@ -18,7 +18,11 @@ namespace sistemadecomandos2
         //path en c de archivos procesados
         public static string g_path = "C:/FolderFilesSystemComands";
         //Lista de carga de docs
-        List<string> listOfDocs = new List<string>();
+        Dictionary<string, string> docs = new Dictionary<string, string>() {
+            {"doc1","" },
+            {"doc2","" }
+        };
+        
         /// <summary>
         /// Funcion que filtra y muestra mensajes de archivo 
         /// </summary>
@@ -357,6 +361,8 @@ namespace sistemadecomandos2
             #endregion
         }
 
+        
+
         /// <summary>
         /// Funcion que habilita boton de mostrar datos cuando los documentos necesarios son cargados
         /// </summary>
@@ -366,17 +372,19 @@ namespace sistemadecomandos2
             
             if (g_file.FileName.Contains("doc1"))
             {
-                listOfDocs.Add("doc1");
+                docs["doc1"] = "doc1";
             }
             if (g_file.FileName.Contains("doc2"))
             {
-                listOfDocs.Add("doc2");
+                docs["doc2"] = "doc2";
             }
 
-            if (listOfDocs.Count()==2)
+
+            if (docs["doc1"].Equals("doc1") && docs["doc2"].Equals("doc2"))
             {
                 this.ShowData.Enabled = true;
             }
+           
         }
         /// <summary>
         /// Boton que limpia la pantalla del datagridview
@@ -394,16 +402,18 @@ namespace sistemadecomandos2
         /// <param name="e"></param>
         private void ShowData_Click(object sender, EventArgs e)
         {
-            this.btn_ExportToCSV.Enabled = true;
+            
             #region LogicaParaMostrarDatos
-            listademensajes.RemoveAt(0);
-            listademensajes.RemoveAt(0);
-            listademensajes.RemoveAt(0);
-            listademensajes.RemoveAt(0);
-            listademensajes.RemoveAt(0);
-            listademensajes.RemoveAt(0);
+           
             try
             {
+                this.btn_ExportToCSV.Enabled = true;
+                listademensajes.RemoveAt(0);
+                listademensajes.RemoveAt(0);
+                listademensajes.RemoveAt(0);
+                listademensajes.RemoveAt(0);
+                listademensajes.RemoveAt(0);
+                listademensajes.RemoveAt(0);
                 this.dataGridView1.Rows.Clear();
                 string changeWorkzone = string.Empty;
                 string defaultPose = "X 0,Y 0,Z 0,A 0,B 0,C 0,S 0,T 0,E1 0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0";
@@ -494,6 +504,17 @@ namespace sistemadecomandos2
 
                         this.dataGridView1.Rows.Add(auxline[1], defaultPose, "NULL", "-1", "-1", "-1", "-1", "-1", defaultPose, "-1");
                     }
+                    if (line[0].Equals("CMD_FINALIZE"))
+                    {
+                        string[] auxline = line[0].Split('_');
+
+                        if (!line[1].Equals("0\n"))
+                        {
+                            this.dataGridView1.Rows.Add(auxline[1], defaultPose, "NULL", "-1", "-1", "-1", "-1", "-1", defaultPose, "-1");
+
+                        }
+
+                    }
                     if (line[0].Equals("CMD_CHANGEWORKZONE"))
                     {
                         string[] auxline = line[0].Split('_');
@@ -514,6 +535,14 @@ namespace sistemadecomandos2
                     }
                     cont++;
                 }
+
+                listademensajes.Clear();
+                listademensajesDoc2.Clear();
+                this.label1.BackColor = Color.Red;
+                this.label1.Text = "DOC1 NO CARGADO";
+                this.label2.BackColor = Color.Red;
+                this.label2.Text = "DOC2 NO CARGADO";
+                this.ShowData.Enabled = false;
             }
             catch (Exception ex)
             {
@@ -575,18 +604,7 @@ namespace sistemadecomandos2
 
         
 
-        //void SaveDataGridViewToCSV(string filename)
-        //{
-        //    // Choose whether to write header. Use EnableWithoutHeaderText instead to omit header.
-        //    dataGridView1.ClipboardCopyMode = DataGridViewClipboardCopyMode.EnableAlwaysIncludeHeaderText;
-        //    // Select all the cells
-        //    dataGridView1.SelectAll();
-        //    // Copy selected cells to DataObject
-        //    DataObject dataObject = dataGridView1.GetClipboardContent();
-        //    // Get the text of the DataObject, and serialize it to a file
-        //    File.WriteAllText(filename, dataObject.GetText(TextDataFormat.CommaSeparatedValue));
-        //}
-
+     
         /// <summary>
         /// Boton dedicado a exportar los datos del DATAGRIDVIEW a un CSV (EN DESARROLLO)
         /// </summary>
