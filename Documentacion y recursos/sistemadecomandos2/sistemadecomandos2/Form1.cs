@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -16,8 +17,7 @@ namespace sistemadecomandos2
     {
         //Instancia para abrir un documento
         OpenFileDialog g_file = new OpenFileDialog();
-        //path en c de archivos procesados
-        public static string g_path = "C:/FolderFilesSystemComands";
+       
         //Lista de carga de docs
         Dictionary<string, string> docs = new Dictionary<string, string>() {
             {"doc1","" },
@@ -102,7 +102,9 @@ namespace sistemadecomandos2
 
             try
             {
+                
                 dataGridView1.Rows.Clear();
+                this.btn_ExportToCSV.Enabled = false;
 
                 string rootfile = String.Empty;
 
@@ -111,14 +113,14 @@ namespace sistemadecomandos2
                     rootfile = g_file.FileName;
 
                 }
-                if (g_file.FileName.Contains("doc1"))
+                if (g_file.FileName.Contains("doc1.csv"))
                 {
                     processtextDoc1();
                     GetComands();
                     this.label1.BackColor = Color.Green;
                     this.label1.Text = "Doc1 SRC CARGADO";
                 }
-                if (g_file.FileName.Contains("doc2"))
+                if (g_file.FileName.Contains("doc2.csv"))
                 {
                     processtextDoc2();
                     getComandsDoc2();
@@ -126,6 +128,8 @@ namespace sistemadecomandos2
                     this.label2.Text = "Doc2 DAT CARGADO";
                 }
                 this.avilableButtonShowMessage();
+
+                g_file.FileName = string.Empty;
             }
             catch (Exception ex)
             {
@@ -321,7 +325,7 @@ namespace sistemadecomandos2
                         {
                             if (!auxSpaceline[1].Equals("PDAT") && !auxSpaceline[1].Equals("FDAT") && !auxSpaceline[1].Equals("LDAT") && !auxSpaceline[1].Equals("INT") && !auxSpaceline[1].Equals("STATE_T"))
                             {
-                                string poses = line[1] + ' ' + line[2] + ' ' + line[3] + ' ' + line[4] + ' ' + line[5] + ' ' + line[6] + ' ' + line[7] + ' ' + line[8] + ' ' + line[9] + ' ' + line[10] + ' ' + line[11] + ' ' + line[12] + ' ' + line[13] + ' ' + line[14];
+                                string poses = line[1] + ',' + line[2] + ',' + line[3] + ',' + line[4] + ',' + line[5] + ',' + line[6] + ',' + line[7] + ',' + line[8] + ',' + line[9] + ',' + line[10] + ',' + line[11] + ',' + line[12] + ',' + line[13] + ',' + line[14];
                                 listademensajesDoc2.Add(auxSpaceline[2] + ';' + poses + '\n');
                             }
                         }
@@ -371,19 +375,22 @@ namespace sistemadecomandos2
         {
             
             
-            if (g_file.FileName.Contains("doc1"))
+            if (g_file.FileName.Contains("doc1.csv"))
             {
-                docs["doc1"] = "doc1";
+                docs["doc1"] = "doc1.csv";
             }
-            if (g_file.FileName.Contains("doc2"))
+            if (g_file.FileName.Contains("doc2.csv"))
             {
-                docs["doc2"] = "doc2";
+                docs["doc2"] = "doc2.csv";
             }
 
 
-            if (docs["doc1"].Equals("doc1") && docs["doc2"].Equals("doc2"))
+            
+            if (docs["doc1"].Equals("doc1.csv") && docs["doc2"].Equals("doc2.csv"))
             {
                 this.ShowData.Enabled = true;
+                docs["doc1"] = String.Empty;
+                docs["doc2"] = String.Empty;
             }
            
         }
@@ -435,6 +442,12 @@ namespace sistemadecomandos2
 
                     string[] line = item.Split(';');
 
+                    if (dataGridView1.Rows.Count.Equals(0))
+                    {
+                        this.ShowData.Enabled = false;
+                    }
+
+
                     if (line[0].Equals("PTP") || line[0].Equals("LIN"))
                     {
 
@@ -445,7 +458,7 @@ namespace sistemadecomandos2
                             string tool = line[3].Trim('[', ']', '\n', 'T', 'o', 'l');
                             string Base = line[4].Trim('B', 'a', 's', 'e', '[', ']', '\n');
                             this.dataGridView1.Rows.Add(MOVECMD, auxPoses[1], line[0], line[2], tool, "-1", changeWorkzone, Base, defaultPose, "-1");
-                            
+
                         }
                         if (line[1].Equals("HOME"))
                         {
@@ -543,7 +556,61 @@ namespace sistemadecomandos2
                     cont++;
                 }
 
+                int nFilas = dataGridView1.Rows.Count;
 
+                int nEmptyRows = 1000 - nFilas;
+
+                if (nEmptyRows>0)
+                {
+                    for (int i = 0; i < nEmptyRows; i++)
+                    {
+                        this.dataGridView1.Rows.Add("INIT", defaultPose, "NULL", "-1", "-1", "-1", "-1", "-1", defaultPose, "-1");
+                    }
+                }
+
+                for (int i = 0; i < dataGridView1.Rows.Count; i++)
+                {
+                    try
+                    {
+                        switch (dataGridView1.Rows[i].Cells[0].Value.ToString())
+                        {
+                            case "INIT":
+                                dataGridView1.Rows[i].Cells[0].Style.BackColor = Color.CadetBlue;
+                                break;
+                            case "MOVECMD":
+                                dataGridView1.Rows[i].Cells[0].Style.BackColor = Color.Orange;
+                                break;
+                            case "SETENTRY":
+                                dataGridView1.Rows[i].Cells[0].Style.BackColor = Color.Red;
+                                break;
+                            case "CHANGEWORKZONE":
+                                dataGridView1.Rows[i].Cells[0].Style.BackColor = Color.MediumPurple;
+                                break;
+                            case "CHANGETOOL":
+                                dataGridView1.Rows[i].Cells[0].Style.BackColor = Color.Blue;
+                                break;
+                            case "VALVEAPERTURE":
+                                dataGridView1.Rows[i].Cells[0].Style.BackColor = Color.LightBlue;
+                                break;
+                            case "ENDZONE":
+                                dataGridView1.Rows[i].Cells[0].Style.BackColor = Color.Yellow;
+                                break;
+                            case "FINALIZE":
+                                dataGridView1.Rows[i].Cells[0].Style.BackColor = Color.PeachPuff;
+                                break;
+                            case "SLEEP":
+                                dataGridView1.Rows[i].Cells[0].Style.BackColor = Color.Green;
+                                break;
+
+                        }
+                    }
+                    catch (Exception)
+                    {
+
+                    }
+
+                    
+                }
              
                 listademensajes.Clear();
                 listademensajesDoc2.Clear();
@@ -656,64 +723,84 @@ namespace sistemadecomandos2
         /// <param name="e"></param>
         private void btn_ExportToCSV_Click(object sender, EventArgs e)
         {
-
-
-
-            SaveFileDialog sfd = new SaveFileDialog();
-            sfd.Filter = "Excel Documents (*.xls)|*.xls";
-            sfd.FileName = "Inventory_Adjustment_Export.xls";
-            if (sfd.ShowDialog() == DialogResult.OK)
+            try
             {
-                // Copiando contenido de datagridview
-                copyAlltoClipboard();
+
+                SaveFileDialog sfd = new SaveFileDialog();
+                sfd.Filter = "Excel Documents (*.xls)|*.xls";
+                sfd.FileName = "Receta_Generada.xls";
+                if (sfd.ShowDialog() == DialogResult.OK)
+                {
+                    // Copiando contenido de datagridview
+                    copyAlltoClipboard();
 
 
-                
-                object misValue;
-               
-                misValue = System.Reflection.Missing.Value;
+
+                    object misValue;
+
+                    misValue = System.Reflection.Missing.Value;
 
 
-                Excel.Application xlexcel = new Excel.Application();
+                    Excel.Application xlexcel = new Excel.Application();
 
-                xlexcel.DisplayAlerts = false; 
-                Excel.Workbook xlWorkBook = xlexcel.Workbooks.Add(misValue);
-                Excel.Worksheet xlWorkSheet = (Excel.Worksheet)xlWorkBook.Worksheets.get_Item(1);
-
-                
-                Excel.Range rng = xlWorkSheet.get_Range("D:D").Cells;
-                rng.NumberFormat = "@";
-
-                // pegar copia en hoja de trabajo
-                Excel.Range CR = (Excel.Range)xlWorkSheet.Cells[1, 1];
-                CR.Select();
-                xlWorkSheet.PasteSpecial(CR, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, true);
-
-        
-                Excel.Range delRng = xlWorkSheet.get_Range("A:A").Cells;
-                delRng.Delete(Type.Missing);
-                xlWorkSheet.get_Range("A1").Select();
-
-                // guardado de excel
-                xlWorkBook.SaveAs(sfd.FileName, Excel.XlFileFormat.xlWorkbookNormal, misValue, misValue, misValue, misValue, Excel.XlSaveAsAccessMode.xlExclusive, misValue, misValue, misValue, misValue, misValue);
-                xlexcel.DisplayAlerts = true;
-                xlWorkBook.Close(true, misValue, misValue);
-                xlexcel.Quit();
-
-                releaseObject(xlWorkSheet);
-                releaseObject(xlWorkBook);
-                releaseObject(xlexcel);
-
-                // limpieza de cilpboard y datagridview
-                Clipboard.Clear();
-                this.dataGridView1.ClearSelection();
+                    xlexcel.DisplayAlerts = false;
+                    Excel.Workbook xlWorkBook = xlexcel.Workbooks.Add(misValue);
+                    Excel.Worksheet xlWorkSheet = (Excel.Worksheet)xlWorkBook.Worksheets.get_Item(1);
 
 
+                    Excel.Range rng = xlWorkSheet.get_Range("D:D").Cells;
+                    rng.NumberFormat = "@";
+
+                    // pegar copia en hoja de trabajo
+                    Excel.Range CR = (Excel.Range)xlWorkSheet.Cells[1, 1];
+                    CR.Select();
+                    xlWorkSheet.PasteSpecial(CR, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, true);
+
+
+                    Excel.Range delRng = xlWorkSheet.get_Range("A:A").Cells;
+                    delRng.Delete(Type.Missing);
+                    xlWorkSheet.get_Range("A1").Select();
+
+                    // guardado de excel
+                    xlWorkBook.SaveAs(sfd.FileName, Excel.XlFileFormat.xlWorkbookNormal, misValue, misValue, misValue, misValue, Excel.XlSaveAsAccessMode.xlExclusive, misValue, misValue, misValue, misValue, misValue);
+                    xlexcel.DisplayAlerts = true;
+                    xlWorkBook.Close(true, misValue, misValue);
+                    xlexcel.Quit();
+
+                    releaseObject(xlWorkSheet);
+                    releaseObject(xlWorkBook);
+                    releaseObject(xlexcel);
+
+                    // limpieza de cilpboard y datagridview
+                    Clipboard.Clear();
+                    this.dataGridView1.ClearSelection();
+
+
+                }
             }
+            catch(Exception ex)
+            {
+               
 
+                MessageBox.Show(ex.Message,"ERROR",MessageBoxButtons.OK,MessageBoxIcon.Warning);
+                closeProcess("EXCEL");
+                MessageBox.Show("Se han cerrado las hojas de excel, Vuelva a exportar el documento", "INFO", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
 
-
-
+        /// <summary>
+        /// Funcion para cerrar procesos de halcon
+        /// </summary>
+        /// <param name="name"></param>
+        public void closeProcess(string name)
+        {
+            foreach (Process proceso in Process.GetProcesses())
+            {
+                if (proceso.ProcessName == name)
+                {
+                    proceso.Kill();
+                }
+            }
         }
     }
 }
