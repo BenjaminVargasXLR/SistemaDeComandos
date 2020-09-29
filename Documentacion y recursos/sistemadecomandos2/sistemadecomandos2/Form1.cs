@@ -5,10 +5,11 @@ using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-
+using Excel = Microsoft.Office.Interop.Excel;
 namespace sistemadecomandos2
 {
     public partial class Form1 : Form
@@ -394,7 +395,12 @@ namespace sistemadecomandos2
         private void button2_Click(object sender, EventArgs e)
         {
             this.dataGridView1.Rows.Clear();
+            this.btn_ExportToCSV.Enabled = false;
         }
+
+      
+
+
         /// <summary>
         /// Boton dedicado a mostrar los mensajes y filtrar y consultar a las listas globales que almacenan la data de los archivos SRC y DAT
         /// </summary>
@@ -439,6 +445,7 @@ namespace sistemadecomandos2
                             string tool = line[3].Trim('[', ']', '\n', 'T', 'o', 'l');
                             string Base = line[4].Trim('B', 'a', 's', 'e', '[', ']', '\n');
                             this.dataGridView1.Rows.Add(MOVECMD, auxPoses[1], line[0], line[2], tool, "-1", changeWorkzone, Base, defaultPose, "-1");
+                            
                         }
                         if (line[1].Equals("HOME"))
                         {
@@ -536,6 +543,8 @@ namespace sistemadecomandos2
                     cont++;
                 }
 
+
+             
                 listademensajes.Clear();
                 listademensajesDoc2.Clear();
                 this.label1.BackColor = Color.Red;
@@ -553,6 +562,7 @@ namespace sistemadecomandos2
 
 
         }
+
 
 
         //Ruta de archivos de salida para archivos procesados de DoC2
@@ -602,9 +612,43 @@ namespace sistemadecomandos2
 
         }
 
-        
 
-     
+
+
+        private void copyAlltoClipboard()
+        {
+            ////Copy to clipboard
+            //dataGridView1.ClipboardCopyMode = DataGridViewClipboardCopyMode.EnableAlwaysIncludeHeaderText;
+            //DataObject dataObj = dataGridView1.GetClipboardContent();
+            //if (dataObj != null)
+            //    Clipboard.SetDataObject(dataObj);
+
+
+            dataGridView1.ClipboardCopyMode = DataGridViewClipboardCopyMode.EnableAlwaysIncludeHeaderText;
+            dataGridView1.SelectAll();
+            DataObject dataObj = dataGridView1.GetClipboardContent();
+            if (dataObj != null)
+                Clipboard.SetDataObject(dataObj);
+        }
+
+        private void releaseObject(object obj)
+        {
+            try
+            {
+                System.Runtime.InteropServices.Marshal.ReleaseComObject(obj);
+                obj = null;
+            }
+            catch (Exception ex)
+            {
+                obj = null;
+                MessageBox.Show("Exception Occurred while releasing object " + ex.ToString());
+            }
+            finally
+            {
+                GC.Collect();
+            }
+        }
+
         /// <summary>
         /// Boton dedicado a exportar los datos del DATAGRIDVIEW a un CSV (EN DESARROLLO)
         /// </summary>
@@ -612,65 +656,64 @@ namespace sistemadecomandos2
         /// <param name="e"></param>
         private void btn_ExportToCSV_Click(object sender, EventArgs e)
         {
-            //string outputFile = g_path + "/ComandSystemExportCSV.csv";
 
-            //SaveDataGridViewToCSV(outputFile);
 
-            if (dataGridView1.Rows.Count > 0)
+
+            SaveFileDialog sfd = new SaveFileDialog();
+            sfd.Filter = "Excel Documents (*.xls)|*.xls";
+            sfd.FileName = "Inventory_Adjustment_Export.xls";
+            if (sfd.ShowDialog() == DialogResult.OK)
             {
-                SaveFileDialog sfd = new SaveFileDialog();
-                sfd.Filter = "CSV (*.csv)|*.csv";
-                sfd.FileName = "CommandSystemCSV.csv";
-                bool fileError = false;
-                if (sfd.ShowDialog() == DialogResult.OK)
-                {
-                    if (File.Exists(sfd.FileName))
-                    {
-                        try
-                        {
-                            File.Delete(sfd.FileName);
-                        }
-                        catch (IOException ex)
-                        {
-                            fileError = true;
-                            MessageBox.Show("No fue posible escribir la data en el disco" + ex.Message);
-                        }
-                    }
-                    if (!fileError)
-                    {
-                        try
-                        {
-                            int columnCount = dataGridView1.Columns.Count;
-                            string columnNames = "";
-                            string[] outputCsv = new string[dataGridView1.Rows.Count + 1];
-                            for (int i = 0; i < columnCount; i++)
-                            {
-                                columnNames += dataGridView1.Columns[i].HeaderText.ToString() + ";";
-                            }
-                            outputCsv[0] += columnNames;
+                // Copiando contenido de datagridview
+                copyAlltoClipboard();
 
-                            for (int i = 1; (i - 1) < dataGridView1.Rows.Count-1; i++)
-                            {
-                                for (int j = 0; j < columnCount; j++)
-                                {
-                                    outputCsv[i] += dataGridView1.Rows[i - 1].Cells[j].Value.ToString() + ";";
-                                }
-                            }
-                           
-                            File.WriteAllLines(sfd.FileName, outputCsv, Encoding.UTF8);
-                            MessageBox.Show("Data Exportada", "Info");
-                        }
-                        catch (Exception ex)
-                        {
-                            MessageBox.Show("Error :" + ex.Message);
-                        }
-                    }
-                }
+
+                
+                object misValue;
+               
+                misValue = System.Reflection.Missing.Value;
+
+
+                Excel.Application xlexcel = new Excel.Application();
+
+                xlexcel.DisplayAlerts = false; 
+                Excel.Workbook xlWorkBook = xlexcel.Workbooks.Add(misValue);
+                Excel.Worksheet xlWorkSheet = (Excel.Worksheet)xlWorkBook.Worksheets.get_Item(1);
+
+                
+                Excel.Range rng = xlWorkSheet.get_Range("D:D").Cells;
+                rng.NumberFormat = "@";
+
+                // pegar copia en hoja de trabajo
+                Excel.Range CR = (Excel.Range)xlWorkSheet.Cells[1, 1];
+                CR.Select();
+                xlWorkSheet.PasteSpecial(CR, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, true);
+
+        
+                Excel.Range delRng = xlWorkSheet.get_Range("A:A").Cells;
+                delRng.Delete(Type.Missing);
+                xlWorkSheet.get_Range("A1").Select();
+
+                // guardado de excel
+                xlWorkBook.SaveAs(sfd.FileName, Excel.XlFileFormat.xlWorkbookNormal, misValue, misValue, misValue, misValue, Excel.XlSaveAsAccessMode.xlExclusive, misValue, misValue, misValue, misValue, misValue);
+                xlexcel.DisplayAlerts = true;
+                xlWorkBook.Close(true, misValue, misValue);
+                xlexcel.Quit();
+
+                releaseObject(xlWorkSheet);
+                releaseObject(xlWorkBook);
+                releaseObject(xlexcel);
+
+                // limpieza de cilpboard y datagridview
+                Clipboard.Clear();
+                this.dataGridView1.ClearSelection();
+
+
             }
-            else
-            {
-                MessageBox.Show("No Record To Export !!!", "Info");
-            }
+
+
+
+
         }
     }
 }
