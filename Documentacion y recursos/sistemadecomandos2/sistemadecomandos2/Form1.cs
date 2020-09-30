@@ -17,35 +17,15 @@ namespace sistemadecomandos2
     {
         //Instancia para abrir un documento
         OpenFileDialog g_file = new OpenFileDialog();
-       
+        //path en c de archivos procesados
+        public static string g_path = "C:/FolderFilesSystemComands";
         //Lista de carga de docs
         Dictionary<string, string> docs = new Dictionary<string, string>() {
             {"doc1","" },
             {"doc2","" }
         };
         
-        /// <summary>
-        /// Funcion que filtra y muestra mensajes de archivo 
-        /// </summary>
-        /// <param name="lines"></param>
-        /// <param name="element"></param>
-        /// <returns></returns>
-        public string listMessage(string[] lines, string element)
-        {
-           
-                string l = String.Empty;
-                if (!String.IsNullOrEmpty(element))
-                {
-                    var line = lines.Where(x => x.Contains(element)).ToList();
-                    l = string.Join("\n", line);
-                    return l;
-                }
-                else
-                {
-                    l = string.Join("\n", lines);
-                    return l;
-                }
-        }
+   
 
        
 
@@ -102,33 +82,41 @@ namespace sistemadecomandos2
 
             try
             {
-                
+                //Limpieza de datos remanentes en datagridview 
                 dataGridView1.Rows.Clear();
+                //bloqueo de boton para exportar excel
                 this.btn_ExportToCSV.Enabled = false;
 
-                string rootfile = String.Empty;
-
+                //Dialogo de captura para ruta a archivo que se cargara al sistema
                 if (g_file.ShowDialog().Equals(DialogResult.OK))
                 {
-                    rootfile = g_file.FileName;
+                    //si el archivo se llama doc1.csv se cargara al sistema
+                    if (g_file.FileName.Contains("doc1.csv"))
+                    {
+                        //Funcion para procesar el texto de doc1
+                        processtextDoc1();
+                        //Funcion para segundo procesamiento en memoria
+                        GetComands();
+                        //Cambio de label a doc1 cargado
+                        this.label1.BackColor = Color.Green;
+                        this.label1.Text = "Doc1 SRC CARGADO";
+                    }
+                    //si el archivo se llama doc2.csv se cargara al sistema
+                    if (g_file.FileName.Contains("doc2.csv"))
+                    {
+                        //Funcion para procesar el texto de doc2
+                        processtextDoc2();
+                        //funcion para segundo procesamiento en memoria
+                        getComandsDoc2();
+                        //Cambio de label a doc2 cargado
+                        this.label2.BackColor = Color.Green;
+                        this.label2.Text = "Doc2 DAT CARGADO";
+                    }
 
                 }
-                if (g_file.FileName.Contains("doc1.csv"))
-                {
-                    processtextDoc1();
-                    GetComands();
-                    this.label1.BackColor = Color.Green;
-                    this.label1.Text = "Doc1 SRC CARGADO";
-                }
-                if (g_file.FileName.Contains("doc2.csv"))
-                {
-                    processtextDoc2();
-                    getComandsDoc2();
-                    this.label2.BackColor = Color.Green;
-                    this.label2.Text = "Doc2 DAT CARGADO";
-                }
+               //Funcion que guarda los nombres de los archivos en un diccionaio
                 this.avilableButtonShowMessage();
-
+                //seteo del nombre del archivo cargado a empty
                 g_file.FileName = string.Empty;
             }
             catch (Exception ex)
@@ -147,32 +135,50 @@ namespace sistemadecomandos2
         string g_pathProcessTextDoc1 = g_path+"/"+"docfilterDoc1.csv";
 
 
+       
         /// <summary>
-        /// Función que elimina texto no necesario del .source 
+        /// Función que elimina texto no necesario del archivo .source 
         /// </summary>
         public void processtextDoc1()
         {
             #region LogicaProcesamientodeSRC
             string line = null;
+            bool encontrado = false;
 
             try
             {
+                //Lectura de archivo
                 using (StreamReader reader = new StreamReader(g_file.FileName))
                 {
+                    //Escritura de archivo
                     using (StreamWriter writer = new StreamWriter(g_pathProcessTextDoc1))
                     {
-
+                        //Mientas la linea no sea nula
                         while ((line = reader.ReadLine()) != null)
                         {
-                            if (!line.Contains(";FOLD PTP") && !line.Contains(";FOLD LIN") && !line.Contains(";FOLD CIRC") && !line.Contains("CMD_SETENTRY") && !line.Contains("CMD_INIT") && !line.Contains("CMD_CHANGEWORKZONE") && !line.Contains("CMD_CHANGETOOL") && !line.Contains("CMD_VALVEAPERTURE") && !line.Contains("CMD_SLEEP") && !line.Contains("CMD_ENDZONE") && !line.Contains("CMD_FINALIZE"))
-                                continue;
-                            //line = Regex.Replace(line, @"\s", "");
-                            line = line.Trim('"');
-                            line = line.Replace('=', ' ');
-                            line = line.Trim();
-                            line = line.Replace(' ', ';');
+                            if (!line.Contains("START_RECIPE = 1") && !encontrado)
+                            {
 
-                            writer.WriteLine(line);
+                                continue;
+                            }
+
+                            encontrado = true;
+
+                            if (encontrado)
+                            {
+                                //Si la linea no contiene alguna de las condiciones pasa de largo a la siguiente linea
+                                if (!line.Contains(";FOLD PTP") && !line.Contains(";FOLD LIN") && !line.Contains(";FOLD CIRC") && !line.Contains("CMD_SETENTRY") && !line.Contains("CMD_INIT") && !line.Contains("CMD_CHANGEWORKZONE") && !line.Contains("CMD_CHANGETOOL") && !line.Contains("CMD_VALVEAPERTURE") && !line.Contains("CMD_SLEEP") && !line.Contains("CMD_ENDZONE") && !line.Contains("CMD_FINALIZE"))
+                                    continue;
+
+                                line = line.Trim('"');
+                                line = line.Replace('=', ' ');
+                                line = line.Trim();
+                                line = line.Replace(' ', ';');
+
+                                writer.WriteLine(line);
+                            }
+
+                            
                         }
                     }
                 }
@@ -181,6 +187,8 @@ namespace sistemadecomandos2
             {
 
                 MessageBox.Show(ex.Message, "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                closeProcess("EXCEL");
+                MessageBox.Show("Se han cerrado las hojas de excel, Vuelva a cargar el documento", "INFO", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             #endregion
         }
@@ -197,13 +205,14 @@ namespace sistemadecomandos2
             try
             {
                 #region LogicaGetComandos
-
+                //Obtencion de las lineas desde el archivo doc1
                 List<string> lines = File.ReadAllLines(g_pathProcessTextDoc1).ToList();
+                //Contador para usar en indices de arreglo
                 int cont = 0;
                 string text = String.Empty;
 
                
-                
+                //Se recorre la lista si se cumple algunas de las condiciones se guarda el mensaje en la lista global
                 foreach (string item in lines)
                 {
                     string[] line = item.Split(';');
@@ -237,6 +246,7 @@ namespace sistemadecomandos2
                             
                         }
                     }
+                    //Si el comando es cmd_setentry almacena la información de la linea siguiente
                     if (line[0].Equals("CMD_SETENTRY"))
                     {
                         if (!String.IsNullOrEmpty(line[3]))
@@ -244,6 +254,8 @@ namespace sistemadecomandos2
 
                             if (!line[3].Equals("0"))
                             {
+                                //Linea siguiente a setentry
+                                //Variable de texto que almacena los datos obtenidos para setentry
                                 text = lines[cont + 1];
                                 string[] data = text.Split(';');
 
@@ -275,7 +287,7 @@ namespace sistemadecomandos2
                     if (line[1].Equals("FOLD"))
                     {
                         string[] data = text.Split(';');
-
+                        //se guardan todos los datos que no sean para setentry y que sea comandos de movimientos
                         if (!line[3].Equals(data[3]))
                         {
                             listademensajes.Add(line[2] + ';' + line[3] + ';' + line[7] + ';' + line[10] + ';' + line[11] + '\n');
@@ -284,10 +296,10 @@ namespace sistemadecomandos2
 
 
                     }
+                    //Contador para almacenar los datos en el indice
                     cont++;
                 }
 
-                //listademensajes = listademensajes.Select(i => i).Distinct().ToList();
                 #endregion
             }
             catch (Exception ex)
@@ -344,7 +356,7 @@ namespace sistemadecomandos2
         }
 
         /// <summary>
-        /// Funcion que consulta 7 devuelve un valor de coordenadas de la lista de coordendas (DAT)
+        /// Funcion que consulta y devuelve un valor de coordenadas de la lista de coordendas (DAT)
         /// </summary>
         /// <param name="text"></param>
         /// <returns></returns>
@@ -369,7 +381,7 @@ namespace sistemadecomandos2
         
 
         /// <summary>
-        /// Funcion que habilita boton de mostrar datos cuando los documentos necesarios son cargados
+        /// Funcion que habilita boton de mostrar datos cuando los documentos necesarios son cargados(usa un diccionario)
         /// </summary>
         public void avilableButtonShowMessage()
         {
@@ -421,27 +433,32 @@ namespace sistemadecomandos2
             try
             {
                 this.btn_ExportToCSV.Enabled = true;
-                listademensajes.RemoveAt(0);
-                listademensajes.RemoveAt(0);
-                listademensajes.RemoveAt(0);
-                listademensajes.RemoveAt(0);
-                listademensajes.RemoveAt(0);
-                listademensajes.RemoveAt(0);
+
+            //se eliminan las primeras 6 filas de la lista en memoria
+                //listademensajes.RemoveAt(0);
+                //listademensajes.RemoveAt(0);
+                //listademensajes.RemoveAt(0);
+                //listademensajes.RemoveAt(0);
+                //listademensajes.RemoveAt(0);
+                //listademensajes.RemoveAt(0);
+                // se limpia datagridview con data remanente
                 this.dataGridView1.Rows.Clear();
+                
                 string changeWorkzone = string.Empty;
+                //Posicion por defecto a variables que no tienen posición
                 string defaultPose = "X 0,Y 0,Z 0,A 0,B 0,C 0,S 0,T 0,E1 0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0";
 
                 int cont = 0;
 
                 
 
-
+                //foreach para agregar los datos a datagridview
                 foreach (var item in listademensajes)
                 {
 
 
                     string[] line = item.Split(';');
-
+                    //Si el datagridview no tiene dato el boton de mostrar se desabilita
                     if (dataGridView1.Rows.Count.Equals(0))
                     {
                         this.ShowData.Enabled = false;
@@ -556,10 +573,13 @@ namespace sistemadecomandos2
                     cont++;
                 }
 
+                //obtencion de cantidad de filas en datagridview
                 int nFilas = dataGridView1.Rows.Count;
 
+                //cantidad de filas vacias segun diferencia de 1000 lineas
                 int nEmptyRows = 1000 - nFilas;
 
+                //si la diferencia es mayor que 0 se llenan el resto de las lineas con data por default
                 if (nEmptyRows>0)
                 {
                     for (int i = 0; i < nEmptyRows; i++)
@@ -568,6 +588,7 @@ namespace sistemadecomandos2
                     }
                 }
 
+                //Colores en fila segun tipo de comando
                 for (int i = 0; i < dataGridView1.Rows.Count; i++)
                 {
                     try
@@ -606,14 +627,15 @@ namespace sistemadecomandos2
                     }
                     catch (Exception)
                     {
-
+                        //catch vacio puesto que la ultima fila del datagridview es vacia y genera un error
                     }
 
                     
                 }
-             
+                //se limpian las listas con datos de los documentos
                 listademensajes.Clear();
                 listademensajesDoc2.Clear();
+                //se setean los botones para volver a ingresar nuevos archivos
                 this.label1.BackColor = Color.Red;
                 this.label1.Text = "DOC1 NO CARGADO";
                 this.label2.BackColor = Color.Red;
@@ -623,6 +645,7 @@ namespace sistemadecomandos2
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
+               
             }
 
             #endregion
@@ -673,7 +696,9 @@ namespace sistemadecomandos2
             catch (Exception ex)
             {
 
-                MessageBox.Show(ex.Message, "ERROR");
+                MessageBox.Show(ex.Message, "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                closeProcess("EXCEL");
+                MessageBox.Show("Se han cerrado las hojas de excel, Vuelva a cargar el documento", "INFO", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             #endregion
 
@@ -681,16 +706,9 @@ namespace sistemadecomandos2
 
 
 
-
+        //Funcion que copia todo el contenido de datagridview
         private void copyAlltoClipboard()
         {
-            ////Copy to clipboard
-            //dataGridView1.ClipboardCopyMode = DataGridViewClipboardCopyMode.EnableAlwaysIncludeHeaderText;
-            //DataObject dataObj = dataGridView1.GetClipboardContent();
-            //if (dataObj != null)
-            //    Clipboard.SetDataObject(dataObj);
-
-
             dataGridView1.ClipboardCopyMode = DataGridViewClipboardCopyMode.EnableAlwaysIncludeHeaderText;
             dataGridView1.SelectAll();
             DataObject dataObj = dataGridView1.GetClipboardContent();
@@ -698,6 +716,7 @@ namespace sistemadecomandos2
                 Clipboard.SetDataObject(dataObj);
         }
 
+        //Función que libera cualquier objeto al momento de terminar de crear el excel
         private void releaseObject(object obj)
         {
             try
@@ -708,7 +727,7 @@ namespace sistemadecomandos2
             catch (Exception ex)
             {
                 obj = null;
-                MessageBox.Show("Exception Occurred while releasing object " + ex.ToString());
+                MessageBox.Show("Excepcion ocurrida al mientras se libero un objeto " + ex.ToString());
             }
             finally
             {
