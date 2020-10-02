@@ -121,8 +121,15 @@ namespace sistemadecomandos2
             }
             catch (Exception ex)
             {
-
+                this.label1.BackColor = Color.Red;
+                this.label1.Text = "DOC1 NO CARGADO";
+                this.label2.BackColor = Color.Red;
+                this.label2.Text = "DOC2 NO CARGADO";
                 MessageBox.Show(ex.Message, "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                closeProcess("EXCEL");
+                MessageBox.Show("Se han cerrado las hojas de excel, Vuelva a cargar el documento", "INFO", MessageBoxButtons.OK, MessageBoxIcon.Information);
+              
+
             }
             #endregion
 
